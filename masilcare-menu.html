@@ -168,6 +168,7 @@ td.c{text-align:center}
     <button role="tab" aria-selected="false" data-tab="role" id="tab-role">2안 역할·권한</button>
     <button role="tab" aria-selected="false" data-tab="cycle" id="tab-cycle">2안 주기 업무 알림</button>
     <button role="tab" aria-selected="false" data-tab="scr" id="tab-scr">화면 구성 비교</button>
+    <button role="tab" aria-selected="false" data-tab="ex" id="tab-ex">통합 화면 예시</button>
   </nav>
 
   <section id="p-tree" role="tabpanel" aria-labelledby="tab-tree">
@@ -198,6 +199,11 @@ td.c{text-align:center}
   <section id="p-cycle" role="tabpanel" aria-labelledby="tab-cycle" hidden>
     <p class="lead" style="margin-bottom:12px">2안 0-1 '오늘의 업무'에 띄울 평가지표 주기 업무입니다. 기한이 다가오거나 미작성인 수급자·직원을 담당자에게 알립니다.</p>
     <div class="tbl"><table><thead><tr><th>주기</th><th>업무</th><th>지표</th><th>담당</th><th>2안 화면</th></tr></thead><tbody id="cyclebody"></tbody></table></div>
+  </section>
+  <section id="p-ex" role="tabpanel" aria-labelledby="tab-ex" hidden>
+    <p class="lead" style="margin-bottom:8px"><b>1안 1-1 수급자 정보관리</b> 통합 화면 예시입니다. 현행 1-1 수급자 정보관리와 1-1-1 대기 수급자 관리를 한 화면으로 합쳤고, 점검 알림 카드와 '서류·평가 현황' 탭은 평가 대응을 위한 제안 항목입니다. 화면은 클릭해 볼 수 있으며 예시 데이터는 모두 가상입니다.</p>
+    <div class="toolbar"><a class="ctl" href="masilcare-1-1-sample.html" target="_blank" rel="noopener" style="text-decoration:none">새 창에서 크게 보기 ↗</a></div>
+    <div class="tbl" style="overflow:hidden"><iframe src="masilcare-1-1-sample.html" title="1안 1-1 수급자 정보관리 화면 예시" loading="lazy" style="display:block;width:100%;height:1700px;border:0"></iframe></div>
   </section>
   <section id="p-scr" role="tabpanel" aria-labelledby="tab-scr" hidden>
     <p class="lead" style="margin-bottom:12px">화면마다 갖춰야 할 항목(조회조건·목록 컬럼·입력/상세 항목·기능/출력)을 비교합니다. 현행은 마실케어 실제 화면 102개를 2026-11-23에 수집했고, 1안·2안은 통합되는 현행 화면 항목을 합산·중복 제거했습니다. 점선 항목은 신규·보강 반영 항목입니다. <button class="ctl" id="sc-xlsx" type="button" style="padding:3px 10px;font-size:.8rem">엑셀 내려받기</button></p>

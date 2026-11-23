@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1안 1-1 수급자 정보관리</title>
+<style>
+:root{
+  --navy:#1f3a68;--navy-2:#2b4f8a;--bg:#f3f5f8;--surface:#fff;--sunken:#f1f3f7;--line:#d9dee7;--line-2:#c4ccd8;
+  --ink:#1c2330;--sub:#5d6778;--muted:#8a93a3;--brand:#2563b8;--brand-soft:#e8f0fb;
+  --ok:#1f8a4c;--ok-soft:#e3f4ea;--warn:#b86e00;--warn-soft:#fdf1dc;--bad:#c0392b;--bad-soft:#fbe7e4;--new:#7a4cc2;--new-soft:#f0e9fb;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.45 -apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+button,input,select{font:inherit;color:inherit}
+/* top */
+.top{height:44px;background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:0 14px}
+.logo{font-weight:800;letter-spacing:-.02em;font-size:15px;width:190px}
+.crumb{font-size:12.5px;opacity:.85}.crumb b{opacity:1}
+.notice{margin-left:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:4px;padding:3px 10px;font-size:12px}
+.who{font-size:12px;opacity:.9;white-space:nowrap}
+.shell{display:grid;grid-template-columns:204px minmax(0,1fr);min-height:calc(100vh - 44px)}
+/* side */
+.side{background:var(--surface);border-right:1px solid var(--line);padding:8px 0;font-size:12.5px}
+.side .ttl{margin:0 8px 6px;background:var(--navy);color:#fff;border-radius:4px;padding:6px 10px;font-weight:700;display:flex;justify-content:space-between}
+.side .ttl small{font-weight:400;opacity:.8}
+.g{padding:6px 12px;font-weight:600;color:var(--ink);display:flex;justify-content:space-between;cursor:default}
+.g.on{color:var(--brand);background:var(--brand-soft)}
+.sub{list-style:none;margin:0 0 4px;padding:0}
+.sub li{padding:4px 12px 4px 26px;color:var(--sub)}
+.sub li.on{color:var(--brand);font-weight:700;background:linear-gradient(90deg,var(--brand) 0 3px,transparent 3px)}
+.sub li .tag{font-size:10px;color:var(--new);margin-left:4px}
+/* main */
+main{padding:10px 14px 30px;min-width:0}
+.shortcut{display:flex;gap:4px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:5px 8px;margin-bottom:10px;font-size:12px}
+.shortcut b{color:var(--brand);margin-right:4px}
+.shortcut span{border:1px solid var(--line);border-radius:3px;padding:1px 7px;color:var(--sub)}
+.shortcut span.cur{background:var(--brand);border-color:var(--brand);color:#fff}
+.head{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.head h1{margin:0;font-size:17px}
+.ind{display:flex;gap:4px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:3px;border-radius:10px;padding:1px 8px;font-size:11px;border:1px solid var(--line-2);background:var(--surface);color:var(--sub);white-space:nowrap}
+.chip.i{border-color:#b9cdee;background:var(--brand-soft);color:var(--brand)}
+.chip.new{border-style:dashed;border-color:var(--new);color:var(--new);background:var(--new-soft)}
+.chip.ok{background:var(--ok-soft);border-color:#bfe2cd;color:var(--ok)}
+.chip.warn{background:var(--warn-soft);border-color:#f0d29d;color:var(--warn)}
+.chip.bad{background:var(--bad-soft);border-color:#f2c0b8;color:var(--bad)}
+.head .act{margin-left:auto;display:flex;gap:6px}
+.btn{border:1px solid var(--line-2);background:var(--surface);border-radius:4px;padding:4px 10px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--brand);color:var(--brand)}
+.btn.p{background:var(--navy);border-color:var(--navy);color:#fff}
+.btn.p:hover{background:var(--navy-2);color:#fff}
+.btn.s{padding:2px 8px;font-size:12px}
+/* alerts */
+.alerts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.al{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:4px;padding:7px 10px;cursor:pointer}
+.al.bad{border-left-color:var(--bad)}.al.ok{border-left-color:var(--ok)}.al.i{border-left-color:var(--brand)}
+.al b{font-size:18px;font-variant-numeric:tabular-nums;margin-right:4px}
+.al div{font-size:12px;color:var(--sub)}
+.al small{display:block;color:var(--muted);font-size:11px}
+/* filter */
+.filter{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:4px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:4px 11px;cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--navy);color:#fff}
+.seg button em{font-style:normal;font-size:11px;opacity:.75;margin-left:3px}
+select,input[type=text],input[type=date]{border:1px solid var(--line-2);border-radius:4px;padding:4px 6px;background:var(--surface);min-width:0}
+input[type=text]{width:150px}
+.chk{display:inline-flex;gap:4px;align-items:center;color:var(--sub)}
+/* body grid */
+.work{display:grid;grid-template-columns:minmax(430px,1fr) minmax(0,1.55fr);gap:10px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:4px;min-width:0}
+.ph{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line);background:var(--sunken)}
+.ph h2{margin:0;font-size:13px}
+.ph .r{margin-left:auto;display:flex;gap:6px;align-items:center}
+table{border-collapse:collapse;width:100%}
+th,td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:center;white-space:nowrap}
+th{background:var(--sunken);font-weight:600;color:var(--sub);font-size:12px;position:sticky;top:0}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:#f7f9fc}
+tbody tr.sel{background:var(--brand-soft);box-shadow:inset 3px 0 0 var(--brand)}
+td.l{text-align:left}
+.st{display:inline-block;border-radius:3px;padding:0 6px;font-size:11.5px;border:1px solid}
+.st.a{color:var(--ok);border-color:#bfe2cd;background:var(--ok-soft)}
+.st.w{color:var(--brand);border-color:#b9cdee;background:var(--brand-soft)}
+.st.h{color:var(--warn);border-color:#f0d29d;background:var(--warn-soft)}
+.st.x{color:var(--muted);border-color:var(--line-2);background:var(--sunken)}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:4px;vertical-align:middle}
+.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}
+.tfoot{display:flex;gap:10px;padding:6px 10px;color:var(--sub);font-size:12px;border-top:1px solid var(--line)}
+.list-wrap{max-height:520px;overflow:auto}
+.list-wrap th,.list-wrap td{padding:5px 5px}
+/* detail */
+.prof{display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;padding:12px}
+.photo{width:84px;height:104px;border-radius:4px;background:var(--sunken);border:1px dashed var(--line-2);display:grid;place-items:center;color:var(--muted);font-size:11px;text-align:center}
+.pname{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.pname b{font-size:16px}
+.kv{display:grid;grid-template-columns:repeat(3,max-content minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.kv>div{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px 7px;min-height:28px;display:flex;align-items:center;gap:6px;min-width:0}
+.kv>.k{background:var(--sunken);font-weight:600;justify-content:center;white-space:nowrap;color:var(--ink)}
+.kv .link{color:var(--brand);font-size:11.5px;cursor:pointer;white-space:nowrap}
+.tabs{display:flex;border-bottom:1px solid var(--line);padding:0 10px;gap:2px;overflow-x:auto}
+.tabs button{border:0;background:none;padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent;color:var(--sub);white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--brand);border-bottom-color:var(--brand);font-weight:700}
+.tp{padding:10px}
+.tp[hidden]{display:none}
+.mini{margin-bottom:12px}
+.mini h3{margin:0 0 6px;font-size:12.5px;display:flex;align-items:center;gap:6px}
+.mini h3 .r{margin-left:auto}
+.mini table{border:1px solid var(--line)}
+.days span{display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;border-radius:3px;margin-right:2px;font-size:11px;background:var(--sunken);color:var(--muted)}
+.days span.on{background:var(--brand);color:#fff}
+.timeline{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line)}
+.timeline li{position:relative;padding:0 0 10px 10px}
+.timeline li::before{content:"";position:absolute;left:-20px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--brand)}
+.timeline small{color:var(--muted)}
+.docs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.doc{border:1px solid var(--line);border-radius:4px;padding:8px;cursor:pointer}
+.doc:hover{border-color:var(--brand)}
+.doc b{display:block;font-size:12.5px}
+.doc small{color:var(--muted)}
+.doc .go{font-size:11px;color:var(--brand)}
+.bottom{display:flex;gap:6px;justify-content:flex-end;padding:10px;border-top:1px solid var(--line);flex-wrap:wrap}
+/* annotation */
+.anno{position:relative}
+.n{position:absolute;top:-8px;left:-8px;z-index:3;width:18px;height:18px;border-radius:50%;background:#e8590c;color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;box-shadow:0 0 0 2px #fff}
+body.noanno .n{display:none}
+.spec{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:4px}
+.spec table th,.spec table td{text-align:left;white-space:normal;vertical-align:top}
+.spec td:first-child{text-align:center;width:36px}
+.spec .nn{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#e8590c;color:#fff;font-size:11px;font-weight:700}
+.toggle{position:fixed;right:14px;bottom:14px;z-index:20;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+/* modal-ish wait detail */
+.empty{padding:30px;text-align:center;color:var(--muted)}
+@media(max-width:1320px){.work{grid-template-columns:minmax(0,1fr)}.list-wrap{max-height:300px}}
+@media(max-width:1100px){.alerts{grid-template-columns:repeat(2,minmax(0,1fr))}.kv{grid-template-columns:max-content minmax(0,1fr)}.docs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.shell{grid-template-columns:minmax(0,1fr)}.side{display:none}.notice,.logo{display:none}main{padding:10px 16px}.alerts{grid-template-columns:minmax(0,1fr)}.prof{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="logo">마실케어</div>
+  <div class="crumb">1. 수급자 관리 › <b>1-1. 수급자 정보관리</b></div>
+  <div class="notice">기관 공지사항이 표시됩니다 (11-3 기관 문서함)</div>
+  <div class="who">2026년 11월 23일 (월) · [T9]센터장 · 로그아웃</div>
+</div>
+<div class="shell">
+  <nav class="side" aria-label="1안 메뉴">
+    <div class="ttl">전체 메뉴 <small>1안 평가지표 기준</small></div>
+    <div class="g on">1. 수급자 관리<span>−</span></div>
+    <ul class="sub">
+      <li class="on">1-1. 수급자 정보관리</li>
+      <li>1-2. 상담일지</li>
+      <li>1-3. 수급자 안내·동의 관리</li>
+      <li>1-4. 예방접종 관리</li>
+      <li>1-5. 수급자 리포트</li>
+    </ul>
+    <div class="g">2. 일정·이동서비스<span>+</span></div>
+    <div class="g">3. 사정·급여계획<span>+</span></div>
+    <div class="g">4. 급여제공 기록<span>+</span></div>
+    <div class="g">5. 프로그램<span>+</span></div>
+    <div class="g">6. 만족도·소통<span>+</span></div>
+    <div class="g">7. 시설·안전·감염<span>+</span></div>
+    <div class="g">8. 직원관리<span>+</span></div>
+    <div class="g">9. 본인부담금<span>+</span></div>
+    <div class="g">10. 직원 급여<span>+</span></div>
+    <div class="g">11. 기관운영·설정<span>+</span></div>
+  </nav>
+
+  <main>
+    <div class="shortcut"><b>→ 바로가기</b><span class="cur">1-1 수급자 정보관리</span><span>2-1 일정관리</span><span>2-2 출석·탑승관리</span><span>3-1 기초평가·급여제공계획</span><span>4-1 요양급여 제공기록</span><span>9-1 청구관리</span></div>
+
+    <div class="head">
+      <h1>1-1. 수급자 정보관리</h1>
+      <div class="ind">
+        <span class="chip">통합: 현행 1-1 수급자 정보관리 + 1-1-1 대기 수급자 관리</span>
+        <span class="chip i">평가지표 30 외부기관 연계</span>
+        <span class="chip i">31 등급현황(근거자료)</span>
+      </div>
+      <div class="act"><button class="btn" id="annoBtn" type="button">설계 번호 숨기기</button><button class="btn p" type="button" id="newBtn">+ 수급자 신규 등록</button></div>
+    </div>
+
+    <div class="alerts anno"><span class="n">1</span>
+      <div class="al bad" data-f="exp"><b>1</b>명 <div>인정만료 90일 이내</div><small>갱신 신청·안내 발송 필요</small></div>
+      <div class="al" data-f="plan"><b>2</b>명 <div>기초평가·급여제공계획 미작성</div><small>→ 3-1 기초평가·급여제공계획</small></div>
+      <div class="al i" data-f="wait"><b>2</b>명 <div>대기 수급자</div><small>최장 대기 23일</small></div>
+      <div class="al ok" data-f="link"><b>0</b>건 <div>퇴소 연계기록지 미발송</div><small>평가지표 30 외부기관 연계</small></div>
+    </div>
+
+    <div class="filter anno"><span class="n">2</span>
+      <div class="seg" role="group" aria-label="현황">
+        <button type="button" data-s="수급중" aria-pressed="true">수급중<em>6</em></button>
+        <button type="button" data-s="대기" aria-pressed="false">대기<em>2</em></button>
+        <button type="button" data-s="보류" aria-pressed="false">보류<em>0</em></button>
+        <button type="button" data-s="퇴소" aria-pressed="false">퇴소<em>1</em></button>
+        <button type="button" data-s="전체" aria-pressed="false">전체<em>9</em></button>
+      </div>
+      <select aria-label="케어그룹"><option>케어그룹 전체</option><option>기본</option><option>사회복지사 C</option><option>요양보호사 A</option></select>
+      <select aria-label="등급"><option>등급 전체</option><option>1등급</option><option>2등급</option><option>3등급</option><option>4등급</option><option>5등급</option><option>인지지원등급</option></select>
+      <select aria-label="본인부담 분류"><option>본인부담 전체</option><option>일반 15%</option><option>감경 9%</option><option>감경 6%</option><option>기초 0%</option><option>의료급여 6%</option><option>등급외 100%</option></select>
+      <input type="text" id="q" placeholder="수급자·보호자 이름 검색" aria-label="이름 검색">
+      <label class="chk"><input type="checkbox"> 기준일</label><input type="date" value="2026-11-23" aria-label="기준일">
+      <span style="margin-left:auto"></span>
+      <button class="btn s" type="button">엑셀</button><button class="btn s" type="button">수급자 현황 출력</button>
+    </div>
+
+    <div class="work">
+      <section class="panel anno" aria-label="수급자 목록"><span class="n">3</span>
+        <div class="ph"><h2 id="listTitle">수급자 목록</h2><div class="r"><small id="cnt" style="color:var(--sub)"></small></div></div>
+        <div class="list-wrap"><table><thead id="lh"></thead><tbody id="lb"></tbody></table></div>
+        <div class="tfoot" id="tf"></div>
+      </section>
+
+      <section class="panel anno" aria-label="수급자 상세" id="detail"><span class="n">4</span></section>
+    </div>
+
+    <section class="spec" aria-label="화면 설계 설명">
+      <div class="ph"><h2>화면 설계 설명 (1안 · 평가지표 기준)</h2></div>
+      <table>
+        <thead><tr><th>No</th><th>영역</th><th>구성 항목</th><th>현행 대비 변경</th></tr></thead>
+        <tbody>
+          <tr><td><span class="nn">1</span></td><td>점검 알림</td><td>인정만료 90일 이내, 기초평가·급여제공계획 미작성, 대기 수급자 수, 퇴소 연계기록지 미발송. 카드를 누르면 해당 대상자만 목록에 남음</td><td><b>신규</b>. 현행 1-8 리포트의 '인정만료 예정', 1-2 '미작성', 1-10 '연계기록지 발송'을 첫 화면에 요약</td></tr>
+          <tr><td><span class="nn">2</span></td><td>조회조건</td><td>현황(수급중·대기·보류·퇴소·전체), 케어그룹, 등급, 본인부담 분류, 이름(수급자·보호자), 기준일, 엑셀·출력</td><td>현행 1-1의 조회조건에 <b>대기</b> 상태와 <b>등급</b> 조건 추가. '퇴소자 포함 검색' 체크는 현황 탭으로 대체</td></tr>
+          <tr><td><span class="nn">3</span></td><td>수급자 목록</td><td>수급중: 연번·현황·수급자명·케어그룹·성별·나이·등급·인정만료(경고 점)<br>대기: 상태·접수일·우선연락·신청자(보호자)·수급자정보·병력·상담내용·대기순번·접수자</td><td>현행 1-1-1 <b>대기 수급자 관리를 '대기' 탭으로 통합</b>. 대기 수급자는 <b>수급 전환</b> 버튼으로 기본정보에 자동 반영</td></tr>
+          <tr><td><span class="nn">4</span></td><td>수급자 상세</td><td>기본정보(사진, 수급자명, 생년월일·생신일, 인정등급·기간, 인정번호, 급여개시일, 본인부담률, 연락처, 주소·위치, 주요질환, 수급현황, 승인구간, 생계급여지원, 별도급여한도액, 케어그룹, 방문 가족요양, 비고)와 하위 탭</td><td>현행의 접힘 섹션 4개를 <b>탭 4개</b>로 정리. 평가 근거 서류(표준약관·기초평가·상담·안내·동의)를 '서류·평가 현황' 탭에 작성 여부와 함께 표시</td></tr>
+          <tr><td><span class="nn">5</span></td><td>보호자 정보</td><td>보호자명·관계·생년월일·휴대폰·청구서수신·대상 구분(급여·청구·이동)·비고, 주 보호자 지정</td><td>현행 동일. 주 보호자 표시 추가</td></tr>
+          <tr><td><span class="nn">6</span></td><td>이용일정·차량</td><td>급여이용 요일·시간, 시작·종료 차량, 식사·간식 계획</td><td>현행 '차량·이용 일정'과 '식사/간식 계획' 버튼을 한 탭으로. 수정은 2-1 일정관리와 연동</td></tr>
+          <tr><td><span class="nn">7</span></td><td>급여개시·퇴소·연계</td><td>급여개시/퇴소 이력, 퇴소정산, 연계기록지 작성·제공 여부, 퇴소 처리</td><td>현행 동일 + <b>연계기록지 발송 현황</b>(현행 1-10 리포트)을 수급자 단위로 표시 — 평가지표 30</td></tr>
+          <tr><td><span class="nn">8</span></td><td>하단 기능</td><td>기본정보 수정, 수급자 정보 출력, 입소사실 확인서, 요양급여수가 변경안내 출력</td><td>현행 동일</td></tr>
+        </tbody>
+      </table>
+      <p style="margin:8px 10px;color:var(--muted);font-size:12px">예시 데이터는 모두 가상입니다. 항목은 현행 마실케어 1-1·1-1-1 화면(2026-11-23 수집)과 1안 매핑 기준이며, 1·4번의 점검 알림·서류 현황은 평가 대응을 위한 제안 항목입니다.</p>
+    </section>
+  </main>
+</div>
+<button class="btn toggle" type="button" onclick="document.getElementById('annoBtn').click()">설계 번호 켜기/끄기</button>
+
+<script>
+const R=[
+ {id:1,st:"수급중",name:"김순자",grp:"요양보호사 A",sex:"여",age:82,grade:"3등급",exp:"2026-12-30",birth:"1944-03-12",lunar:"2026.04.21 (음력)",no:"L1904150001",start:"2025-03-04",rate:"일반 15%",tel:"010-****-1201",addr:"(07635) 서울 강서구 ○○로 12, 101동 803호",dz:"치매(알츠하이머형), 고혈압",zone:"5km 미만",grpCare:"요양보호사 A",fam:"미이용",note:"오후 낙상 주의, 보행보조기 사용",days:[1,2,3,4,5],time:"08:30 ~ 17:30",car:"스타렉스C",plan:false,guard:[["이영호","자녀(아들)","1968-**-**","010-****-3877","문자","급여·청구·이동","주 보호자"],["김미숙","자녀(딸)","1971-**-**","010-****-5510","-","이동",""]]},
+ {id:2,st:"수급중",name:"박정례",grp:"요양보호사 A",sex:"여",age:76,grade:"4등급",exp:"2027-05-19",birth:"1950-07-02",lunar:"2026.06.11 (양력)",no:"L1904150002",start:"2025-06-02",rate:"감경 9%",tel:"-",addr:"(07636) 서울 강서구 ○○길 7",dz:"뇌경색 후유증",zone:"5km 미만",grpCare:"요양보호사 A",fam:"미이용",note:"",days:[1,3,5],time:"09:00 ~ 16:00",car:"스타렉스C",plan:true,guard:[["박성민","자녀(아들)","1975-**-**","010-****-2299","알림톡","급여·청구","주 보호자"]]},
+ {id:3,st:"수급중",name:"최만수",grp:"기본",sex:"남",age:88,grade:"2등급",exp:"2028-02-24",birth:"1938-01-15",lunar:"2026.02.03 (음력)",no:"L1904150003",start:"2024-11-11",rate:"기초 0%",tel:"010-****-7781",addr:"(07640) 서울 강서구 ○○로 88",dz:"파킨슨병",zone:"5~10km",grpCare:"기본",fam:"이용",note:"휠체어 탑승",days:[1,2,3,4,5,6],time:"08:00 ~ 18:00",car:"카니발A",plan:false,guard:[["최은영","자녀(딸)","1966-**-**","010-****-4410","문자","급여·청구·이동","주 보호자"]]},
+ {id:4,st:"수급중",name:"정옥분",grp:"사회복지사 C",sex:"여",age:71,grade:"4등급",exp:"2030-09-10",birth:"1955-09-30",lunar:"2026.09.30 (양력)",no:"L1904150004",start:"2026-09-01",rate:"일반 15%",tel:"010-****-6612",addr:"(07631) 서울 강서구 ○○동 33",dz:"경도인지장애",zone:"5km 미만",grpCare:"사회복지사 C",fam:"미이용",note:"",days:[2,4],time:"09:30 ~ 15:30",car:"스타렉스C",plan:true,guard:[["정대한","배우자","1952-**-**","010-****-9001","문자","급여·청구·이동","주 보호자"]]},
+ {id:5,st:"수급중",name:"한상철",grp:"기본",sex:"남",age:79,grade:"5등급",exp:"2028-03-24",birth:"1947-12-01",lunar:"2026.12.01 (양력)",no:"L1904150005",start:"2025-01-06",rate:"의료급여 6%",tel:"010-****-3021",addr:"(07633) 서울 강서구 ○○로 5",dz:"치매(혈관성)",zone:"5km 미만",grpCare:"기본",fam:"미이용",note:"",days:[1,2,3,4,5],time:"08:30 ~ 16:30",car:"카니발A",plan:false,guard:[["한지민","자녀(딸)","1978-**-**","010-****-1188","보호자앱","급여·청구·이동","주 보호자"]]},
+ {id:6,st:"수급중",name:"윤말순",grp:"요양보호사 A",sex:"여",age:93,grade:"3등급",exp:"2027-08-31",birth:"1933-05-05",lunar:"2026.03.29 (음력)",no:"L1904150006",start:"2023-04-03",rate:"일반 15%",tel:"-",addr:"(07638) 서울 강서구 ○○길 41",dz:"골다공증, 난청",zone:"5km 미만",grpCare:"요양보호사 A",fam:"미이용",note:"보청기 착용",days:[1,2,3,4,5],time:"09:00 ~ 17:00",car:"스타렉스C",plan:true,guard:[["윤경호","자녀(아들)","1960-**-**","010-****-7070","문자","급여·청구","주 보호자"]]},
+ {id:7,st:"퇴소",name:"오금례",grp:"기본",sex:"여",age:90,grade:"2등급",exp:"2026-10-02",birth:"1936-02-20",lunar:"-",no:"L1904150007",start:"2024-02-01",rate:"일반 15%",tel:"-",addr:"(07639) 서울 강서구 ○○로 21",dz:"치매",zone:"5km 미만",grpCare:"기본",fam:"미이용",note:"2026-09-30 요양원 입소로 퇴소",days:[],time:"-",car:"-",plan:true,out:"2026-09-30",guard:[["오세진","자녀(아들)","1962-**-**","010-****-2020","문자","급여·청구","주 보호자"]]}
+];
+const W=[
+ {st:"대기중",recv:"2026-10-31",pri:true,app:"이철민(자녀) 010-****-0031",rec:"이복순 · 여 79세 · 3등급",dz:"고혈압, 경도인지장애",memo:"주5일(월~금) 09:00~18:00 이용 희망, 차량 필요",order:1,by:"[T8]사회복지사C"},
+ {st:"상담중",recv:"2026-11-14",pri:false,app:"강수정(자녀) 010-****-4402",rec:"강덕수 · 남 84세 · 등급신청중",dz:"뇌졸중 후유증",memo:"등급 판정 후 입소 희망, 휠체어 사용",order:2,by:"[T8]사회복지사C"}
+];
+let status="수급중",sel=1,tab="guard",flt=null;
+const $=s=>document.querySelector(s);
+const dday=d=>Math.round((new Date(d)-new Date("2026-11-23"))/864e5);
+const expWarn=r=>r.st==="수급중"&&dday(r.exp)<=90;
+function renderList(){
+  const q=$("#q").value.trim();
+  if(status==="대기"){
+    $("#listTitle").textContent="대기 수급자 목록";
+    $("#lh").innerHTML="<tr><th>순번</th><th>상태</th><th>접수일</th><th>우선</th><th>수급자정보</th><th>신청자(보호자)</th></tr>";
+    const L=W.filter(w=>!q||(w.rec+w.app).includes(q));
+    $("#lb").innerHTML=L.map((w,i)=>`<tr data-w="${i}" class="${sel==='w'+i?'sel':''}"><td>${w.order}</td><td><span class="st w">${w.st}</span></td><td>${w.recv}</td><td>${w.pri?'●':''}</td><td class="l">${w.rec}</td><td class="l">${w.app}</td></tr>`).join("")||`<tr><td colspan="6" class="empty">대기 수급자가 없습니다</td></tr>`;
+    $("#cnt").textContent=`전체 ${L.length}명`;
+    $("#tf").innerHTML=`<span>대기 ${W.length}명</span><span>최장 대기 23일</span><span style="margin-left:auto"><button class="btn s" type="button">+ 대기 수급자 등록</button></span>`;
+  }else{
+    $("#listTitle").textContent="수급자 목록";
+    $("#lh").innerHTML="<tr><th>연번</th><th>현황</th><th>수급자명</th><th>케어그룹</th><th>성별</th><th>나이</th><th>등급</th><th>인정만료</th></tr>";
+    let L=R.filter(r=>(status==="전체"||r.st===status)&&(!q||r.name.includes(q)||r.guard.some(g=>g[0].includes(q))));
+    if(flt==="exp")L=L.filter(expWarn); if(flt==="plan")L=L.filter(r=>!r.plan&&r.st==="수급중");
+    $("#lb").innerHTML=L.map((r,i)=>`<tr data-id="${r.id}" class="${sel===r.id?'sel':''}"><td>${i+1}</td><td><span class="st ${r.st==='수급중'?'a':r.st==='퇴소'?'x':'h'}">${r.st}</span></td><td><b>${r.name}</b>${!r.plan&&r.st==='수급중'?'<span class="dot warn" title="계획 미작성"></span>':''}</td><td>${r.grp}</td><td>${r.sex}</td><td>${r.age}</td><td>${r.grade}</td><td style="${expWarn(r)?'color:var(--bad);font-weight:700':''}">${r.exp}${expWarn(r)?' <small>D-'+dday(r.exp)+'</small>':''}</td></tr>`).join("")||`<tr><td colspan="8" class="empty">조건에 맞는 수급자가 없습니다</td></tr>`;
+    $("#cnt").textContent=`전체 ${L.length}명`+(flt?" · 알림 필터 적용 중":"");
+    const m=L.filter(r=>r.sex==="남").length;
+    $("#tf").innerHTML=`<span>남 ${m}명</span><span>여 ${L.length-m}명</span><span style="margin-left:auto">${flt?'<button class="btn s" type="button" id="clr">알림 필터 해제</button>':''}</span>`;
+    const c=$("#clr"); if(c)c.onclick=()=>{flt=null;renderList()};
+  }
+  document.querySelectorAll("#lb tr[data-id]").forEach(t=>t.onclick=()=>{sel=+t.dataset.id;renderList();renderDetail()});
+  document.querySelectorAll("#lb tr[data-w]").forEach(t=>t.onclick=()=>{sel="w"+t.dataset.w;renderList();renderDetail()});
+}
+function renderDetail(){
+  const D=$("#detail"), n='<span class="n">4</span>';
+  if(typeof sel==="string"){const w=W[+sel.slice(1)];
+    D.innerHTML=n+`<div class="ph"><h2>대기 수급자 상세</h2><div class="r"><span class="st w">${w.st}</span></div></div>
+    <div style="padding:12px"><div class="kv">
+      <div class="k">접수일</div><div>${w.recv}</div><div class="k">대기순번</div><div>${w.order}</div><div class="k">우선연락</div><div>${w.pri?'예':'아니오'}</div>
+      <div class="k">수급자정보</div><div>${w.rec}</div><div class="k">신청자(보호자)</div><div>${w.app}</div><div class="k">접수자</div><div>${w.by}</div>
+      <div class="k">병력</div><div>${w.dz}</div><div class="k">상담내용</div><div style="grid-column:span 3">${w.memo}</div>
+    </div></div>
+    <div class="bottom"><button class="btn" type="button">수정</button><button class="btn" type="button">상담일지 작성 (→1-2)</button><button class="btn" type="button">대기 종료</button><button class="btn p" type="button">수급 전환 (기본정보 자동 등록)</button></div>`;return}
+  const r=R.find(x=>x.id===sel)||R[0];
+  const docs=[["표준약관","2025-03-04 체결","ok"],["기초평가·급여제공계획",r.plan?"2026-10-09 작성":"미작성",r.plan?"ok":"bad","3-1"],["상담일지","4분기 작성","ok","1-2"],["안내·동의(인권·8대지침)","2026-03-10 설명","ok","1-3"],["예방접종","2026-10-15 독감","ok","1-4"],["급여제공 결과평가","하반기 예정","warn","3-1"],["기타비용","월 이·미용 1회","ok"],["본인부담금","11월 청구 예정","ok","9-1"]];
+  D.innerHTML=n+`<div class="ph"><h2>수급자 상세</h2><div class="r"><button class="btn s" type="button">기본정보 수정</button></div></div>
+  <div class="prof"><div class="photo">사진<br><small>변경 · 삭제</small></div><div style="min-width:0">
+    <div class="pname"><b>${r.name}</b><span>(${r.sex}/만${r.age}세)</span><span class="st ${r.st==='수급중'?'a':'x'}">${r.st}</span><span class="chip">${r.grade}</span><span class="chip">${r.rate}</span>${expWarn(r)?`<span class="chip bad">인정만료 D-${dday(r.exp)}</span>`:''}${!r.plan&&r.st==='수급중'?'<span class="chip warn">급여제공계획 미작성</span>':''}</div>
+    <div class="kv">
+      <div class="k">생년월일</div><div>${r.birth}</div><div class="k">생신일</div><div>${r.lunar}</div><div class="k">연락처</div><div>${r.tel}</div>
+      <div class="k">인정등급</div><div>${r.grade} (~${r.exp}) <span class="link">변경/갱신</span></div><div class="k">인정번호</div><div>${r.no}</div><div class="k">급여개시일</div><div>${r.start} <span class="link">이력수정</span></div>
+      <div class="k">본인부담률</div><div>${r.rate} <span class="link">변경</span></div><div class="k">승인구간</div><div>${r.zone} <span class="link">변경</span></div><div class="k">케어그룹</div><div>${r.grpCare} <span class="link">설정</span></div>
+      <div class="k">주요질환</div><div>${r.dz}</div><div class="k">생계급여지원</div><div>- <span class="link">변경</span></div><div class="k">방문 가족요양</div><div>${r.fam} <span class="link">변경</span></div>
+      <div class="k">별도급여한도액</div><div>- <span class="link">설정</span></div><div class="k">주소(위치)</div><div style="grid-column:span 3;min-width:0">${r.addr} <span class="link">위치정보</span></div>
+      <div class="k">비고</div><div style="grid-column:span 5">${r.note||'-'}</div>
+    </div></div></div>
+  <div class="tabs" role="tablist">
+    ${[["guard","보호자 정보","5"],["sched","이용일정·차량","6"],["hist","급여개시·퇴소·연계","7"],["docs","서류·평가 현황",""]].map(([k,l])=>`<button role="tab" type="button" data-t="${k}" aria-selected="${tab===k}">${l}</button>`).join("")}
+  </div>
+  <div class="tp anno" ${tab==='guard'?'':'hidden'}><span class="n">5</span>
+    <div class="mini"><h3>보호자 목록 <span class="r"><button class="btn s" type="button">+ 보호자 추가</button></span></h3>
+    <div style="overflow-x:auto"><table><thead><tr><th>보호자명</th><th>관계</th><th>생년월일</th><th>휴대폰</th><th>청구서수신</th><th>대상 구분</th><th>비고</th><th></th></tr></thead>
+    <tbody>${r.guard.map(g=>`<tr><td>${g[0]} ${g[6]?'<span class="chip i">'+g[6]+'</span>':''}</td><td>${g[1]}</td><td>${g[2]}</td><td>${g[3]}</td><td>${g[4]}</td><td>${g[5]}</td><td>-</td><td><button class="btn s" type="button">수정</button></td></tr>`).join("")}</tbody></table></div></div>
+  </div>
+  <div class="tp anno" ${tab==='sched'?'':'hidden'}><span class="n">6</span>
+    <div class="mini"><h3>급여 이용 일정 <span class="r"><button class="btn s" type="button">2-1 일정관리에서 수정</button></span></h3>
+    <table><thead><tr><th>연번</th><th>이용 요일</th><th>이용 시간</th><th>시작차량</th><th>종료차량</th></tr></thead>
+    <tbody><tr><td>1</td><td class="days">${"일월화수목금토".split("").map((d,i)=>`<span class="${r.days.includes(i)?'on':''}">${d}</span>`).join("")}</td><td>${r.time}</td><td>${r.car}</td><td>${r.car}</td></tr></tbody></table></div>
+    <div class="mini"><h3>식사·간식 계획</h3>
+    <table><thead><tr><th>구분</th><th>아침</th><th>오전간식</th><th>점심</th><th>오후간식</th><th>저녁</th><th>식사 형태</th></tr></thead>
+    <tbody><tr><td>제공</td><td>-</td><td>●</td><td>●</td><td>●</td><td>${r.time.includes('18')?'●':'-'}</td><td>일반식</td></tr></tbody></table></div>
+  </div>
+  <div class="tp anno" ${tab==='hist'?'':'hidden'}><span class="n">7</span>
+    <div class="mini"><h3>급여개시/퇴소 이력 <span class="r"><button class="btn s" type="button">이력 수정</button></span></h3>
+    <ul class="timeline"><li><b>급여개시</b> ${r.start}<br><small>계약 · 표준약관 체결</small></li>${r.out?`<li><b>퇴소</b> ${r.out}<br><small>퇴소정산 완료 · 연계기록지 작성 2026-09-30 · 제공 2026-10-01 (문자, 수령: 보호자)</small></li>`:'<li style="color:var(--muted)">현재 수급중</li>'}</ul></div>
+    <div class="mini"><h3>연계기록지 <span class="chip i">평가지표 30</span></h3>
+    <table><thead><tr><th>작성일</th><th>연계사유</th><th>작성자</th><th>제공일</th><th>제공방법</th><th>수령자</th></tr></thead>
+    <tbody>${r.out?'<tr><td>2026-09-30</td><td>요양원 입소</td><td>[T8]사회복지사C</td><td>2026-10-01</td><td>문자</td><td>오세진(아들)</td></tr>':'<tr><td colspan="6" class="empty" style="padding:10px">퇴소·연계 이력 없음</td></tr>'}</tbody></table></div>
+  </div>
+  <div class="tp" ${tab==='docs'?'':'hidden'}>
+    <p style="margin:0 0 8px;color:var(--sub);font-size:12px">평가 근거 서류의 작성 여부를 보여 주고, 누르면 작성 화면으로 이동합니다. <span class="chip new">제안 항목</span></p>
+    <div class="docs">${docs.map(d=>`<div class="doc"><b>${d[0]}</b><span class="chip ${d[2]}">${d[2]==='ok'?'작성':d[2]==='bad'?'미작성':'예정'}</span><br><small>${d[1]}</small>${d[3]?`<div class="go">→ ${d[3]} 바로가기</div>`:''}</div>`).join("")}</div>
+  </div>
+  <div class="bottom anno"><span class="n">8</span>${r.st==='수급중'?'<button class="btn" type="button">퇴소 처리 (연계기록지 작성)</button>':''}<button class="btn" type="button">수급자 정보 출력</button><button class="btn" type="button">입소사실 확인서 출력</button><button class="btn" type="button">요양급여수가 변경안내 출력 (2026년)</button></div>`;
+  D.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;renderDetail()});
+}
+document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));status=b.dataset.s;flt=null;sel=status==="대기"?"w0":(R.find(r=>status==="전체"||r.st===status)||R[0]).id;renderList();renderDetail()});
+document.querySelectorAll(".al").forEach(a=>a.onclick=()=>{const f=a.dataset.f;
+  if(f==="wait"){document.querySelector('.seg [data-s="대기"]').click();return}
+  if(f==="link"){document.querySelector('.seg [data-s="퇴소"]').click();tab="hist";renderDetail();return}
+  document.querySelector('.seg [data-s="수급중"]').click();flt=f;const r=R.find(x=>f==="exp"?expWarn(x):!x.plan&&x.st==="수급중");if(r)sel=r.id;renderList();renderDetail()});
+$("#q").oninput=renderList;
+$("#annoBtn").onclick=()=>{document.body.classList.toggle("noanno");$("#annoBtn").textContent=document.body.classList.contains("noanno")?"설계 번호 보기":"설계 번호 숨기기"};
+$("#newBtn").onclick=()=>alert("수급자 신규 등록 화면 (설계 범위 외)");
+renderList();renderDetail();
+</script>
+</body>
+</html>
